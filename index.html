@@ -711,7 +711,29 @@ window.onload = function(){
     if(e.key==='Enter'&&document.activeElement.id==='nueva-cat-insumo-input') confirmarNuevaCatInsumo();
     if(e.key==='Enter'&&document.activeElement.id==='nueva-cat') agregarCategoria();
   });
+  // Sincronizacion automatica al abrir
+  if(SHEETS_URL) sincronizarDesdeSheets();
+  // Sincronizacion silenciosa cada 2 minutos
+  setInterval(function(){ if(SHEETS_URL) sincronizarSilenciosa(); }, 120000);
 };
+async function sincronizarSilenciosa(){
+  if(!SHEETS_URL) return;
+  try{
+    const r=await fetch(SHEETS_URL+'?action=getAll');
+    const d=await r.json();
+    if(d.insumos)     insumos=d.insumos;
+    if(d.bases)       bases=d.bases;
+    if(d.recetas)     recetas=d.recetas;
+    if(d.proveedores) proveedores=d.proveedores;
+    if(d.ventas)      ventas=d.ventas;
+    if(d.egresos)     egresos=d.egresos;
+    if(d.cierres)     cierres=d.cierres;
+    if(d.categorias)  categorias=d.categorias;
+    if(d.stock)       stock=d.stock;
+    guardar();
+    renderInsumos(); renderBases(); renderRecetas(); renderProveedores(); renderCaja(); renderCategorias(); renderStock(); renderClientes();
+  }catch(e){}
+}
 function guardarConfig(){
   const val=document.getElementById('sheets-id').value.trim();
   if(!val){toast('Ingresá la URL','error');return;}
